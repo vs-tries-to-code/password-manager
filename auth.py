@@ -1,5 +1,4 @@
 import bcrypt 
-import cryptography
 def create_master_passwd():
     master_pw = input("Enter master password: ")
     mp2 = input("Confirm password: ")
@@ -12,14 +11,12 @@ def create_master_passwd():
 
 def hash_pw(passwd):
     pw_bytes = passwd.encode('utf-8')
-    encr_salt = bcrypt.gensalt()
-    hash_pw  = bcrypt.hashpw(pw_bytes, encr_salt)
-    return hash_pw, encr_saltsalt
+    hash_pw  = bcrypt.hashpw(pw_bytes, bcrypt.gensalt())
+    return hash_pw
 
 def verify_pw(passwd, hash_pw):
     pw_bytes = passwd.encode('utf-8')
-    encr_salt = bcrypt.gensalt()
-    hash_passwd  = bcrypt.hashpw(pw_bytes, encr_salt)
+    hash_passwd  = bcrypt.hashpw(pw_bytes, bcrypt.gensalt())
     if (hash_passwd == hash_pw):
         print("Authentication successful")
         return 1

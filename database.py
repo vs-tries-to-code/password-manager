@@ -9,6 +9,8 @@ def create_db():
 def create_tables(con):
     cur = con.cursor()
 
+    q = "USE storage.db;"
+
     q1 = """
     CREATE TABLE IF NOT EXISTS master_auth (
         id INTEGER PRIMARY KEY,
@@ -25,9 +27,27 @@ def create_tables(con):
         password BLOB NOT NULL
     );
     """
-
+    cur.execute(q)
     cur.execute(q1)
     cur.execute(q2)
 
     con.commit()
 
+def master_pw_exists(con):
+    cur = con.cursor()
+    q = "SELECT * FROM master_auth;"
+    cur.execute(q)
+    
+    row = cur.fetchone()
+
+    if row is not None:
+        return True
+    else:
+        return False
+
+def add_master_pw(con, hash, salt):
+    cur = con.cursor()
+    p = f"iNSERT INTO master_auth VALUES (1, {hash}, {salt});"
+    cur.execute(p)
+    con.commit()
+    
