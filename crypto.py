@@ -1,10 +1,10 @@
 import os
-from cryptography.fernet import Fernet 
-import hashlib 
+from cryptography.fernet import Fernet
+import hashlib
 import base64
 
 def derive_salt():
-    return urandom(16)
+    return os.urandom(16)
 
 def derive_key(master_pw, salt):
     key = hashlib.pbkdf2_hmac(

@@ -1,28 +1,22 @@
-import bcrypt 
+import bcrypt
+
 def create_master_passwd():
     master_pw = input("Enter master password: ")
     mp2 = input("Confirm password: ")
-    if (master_pw == mp2):
-        print("Master password set!")
+    if master_pw == mp2:
+        print("Master password set")
         return master_pw
-    else:
-        print("Passwords do not match, enter password again")
-        return 0
+
+    print("Passwords do not match, enter password again")
+    return None
 
 def hash_pw(passwd):
     pw_bytes = passwd.encode('utf-8')
-    hash_pw  = bcrypt.hashpw(pw_bytes, bcrypt.gensalt())
-    return hash_pw
+    return bcrypt.hashpw(pw_bytes, bcrypt.gensalt())
 
-def verify_pw(passwd, hash_pw):
+def verify_pw(passwd, stored_hash):
     pw_bytes = passwd.encode('utf-8')
-    hash_passwd  = bcrypt.hashpw(pw_bytes, bcrypt.gensalt())
-    if (hash_passwd == hash_pw):
-        print("Authentication successful")
-        return 1
-    else:
-        print("Authentication unsuccessful")
-        return 0
+    return bcrypt.checkpw(pw_bytes, stored_hash)
         
 
 

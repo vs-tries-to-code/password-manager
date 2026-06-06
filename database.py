@@ -2,14 +2,11 @@ import sqlite3 as sql
 
 
 def create_db():
-    con = sql.connect("storage.db")
-    return con
+    return sql.connect("storage.db")
 
 
 def create_tables(con):
     cur = con.cursor()
-
-    q = "USE storage.db;"
 
     q1 = """
     CREATE TABLE IF NOT EXISTS master_auth (
@@ -21,33 +18,49 @@ def create_tables(con):
 
     q2 = """
     CREATE TABLE IF NOT EXISTS vault (
-        id INTEGER PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         website TEXT NOT NULL,
         username TEXT NOT NULL,
         password BLOB NOT NULL
     );
     """
-    cur.execute(q)
+
     cur.execute(q1)
     cur.execute(q2)
-
     con.commit()
+
 
 def master_pw_exists(con):
     cur = con.cursor()
-    q = "SELECT * FROM master_auth;"
+    q = "SELECT 1 FROM master_auth LIMIT 1;"
     cur.execute(q)
-    
-    row = cur.fetchone()
+    return cur.fetchone() is not None
 
-    if row is not None:
-        return True
-    else:
-        return False
 
-def add_master_pw(con, hash, salt):
+def get_master_auth(con):
     cur = con.cursor()
-    p = f"iNSERT INTO master_auth VALUES (1, {hash}, {salt});"
-    cur.execute(p)
+    q = "SELECT password_hash, encryption_salt FROM master_auth WHERE id = 1 LIMIT 1;"
+    cur.execute(q)
+    return cur.fetchone()
+
+
+def add_master_pw(con, hash_value, salt):
+    cur = con.cursor()
+    q = "INSERT OR REPLACE INTO master_auth (id, password_hash, encryption_salt) VALUES (1, ?, ?);"
+    cur.execute(q, (hash_value, salt))
     con.commit()
+
+
+def add_vault_entry(con, website, username, password_ciphertext):
+    cur = con.cursor()
+    q = "INSERT INTO vault (website, username, password) VALUES (?, ?, ?);"
+    cur.execute(q, (website, username, password_ciphertext))
+    con.commit()
+
+
+def get_vault_entries(con):
+    cur = con.cursor()
+    q = "SELECT website, username, password FROM vault ORDER BY id;"
+    cur.execute(q)
+    return cur.fetchall()
     
