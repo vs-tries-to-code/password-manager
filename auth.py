@@ -1,14 +1,15 @@
 import bcrypt
+from getpass import getpass
 
 def create_master_passwd():
-    master_pw = input("Enter master password: ")
-    mp2 = input("Confirm password: ")
-    if master_pw == mp2:
-        print("Master password set")
-        return master_pw
+    while True:
+        pw1 = getpass("Enter master password: ")
+        pw2 = getpass("Confirm password: ")
 
-    print("Passwords do not match, enter password again")
-    return None
+        if pw1 == pw2:
+            return pw1
+
+        print("Passwords do not match. Try again.")
 
 def hash_pw(passwd):
     pw_bytes = passwd.encode('utf-8')
@@ -17,6 +18,27 @@ def hash_pw(passwd):
 def verify_pw(passwd, stored_hash):
     pw_bytes = passwd.encode('utf-8')
     return bcrypt.checkpw(pw_bytes, stored_hash)
+
+MAX_ATTEMPTS = 5
+
+def login(stored_hash):
+    attempts = 0
+
+    while attempts < MAX_ATTEMPTS:
+        pw = input("Enter master password: ")
+
+        if verify_pw(pw, stored_hash):
+            return pw
+
+        attempts += 1
+
+        print(
+            f"Incorrect password. "
+            f"{MAX_ATTEMPTS - attempts} attempts remaining."
+        )
+
+    return None
+
         
 
 
