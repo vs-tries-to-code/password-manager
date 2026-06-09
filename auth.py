@@ -1,5 +1,6 @@
 import bcrypt
 from getpass import getpass
+from crypto import derive_key, derive_salt
 
 def create_master_passwd():
     while True:
@@ -28,7 +29,9 @@ def login(stored_hash):
         pw = input("Enter master password: ")
 
         if verify_pw(pw, stored_hash):
-            return pw
+            salt = derive_salt()
+            key = derive_key(pw, salt)
+            return key
 
         attempts += 1
 
