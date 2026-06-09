@@ -49,6 +49,7 @@ def add_master_pw(con, hash_value, salt):
     q = "INSERT OR REPLACE INTO master_auth (id, password_hash, encryption_salt) VALUES (1, ?, ?);"
     cur.execute(q, (hash_value, salt))
     con.commit()
+    print("Master Password set successfully")
 
 
 def add_vault_entry(con, website, username, password_ciphertext):
@@ -58,9 +59,9 @@ def add_vault_entry(con, website, username, password_ciphertext):
     con.commit()
 
 
-def get_vault_entries(con):
+def get_vault_entries(con, website):
     cur = con.cursor()
-    q = "SELECT website, username, password FROM vault ORDER BY id;"
+    q = f"SELECT website, username, password FROM vault ORDER BY id WHERE website = {website};"
     cur.execute(q)
     return cur.fetchall()
     
