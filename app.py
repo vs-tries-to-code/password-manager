@@ -1,6 +1,6 @@
 from auth import create_master_passwd, hash_pw, verify_pw, login
 from crypto import derive_salt, derive_key, encrypt, decrypt
-from database import create_db, create_tables, master_pw_exists, add_master_pw, get_master_auth, add_vault_entry, get_vault_entries
+from database import create_db, create_tables, master_pw_exists, add_master_pw, get_master_auth, add_vault_entry, get_vault_entries, update_entry
 from getpass import getpass
 
 link = create_db()
@@ -20,13 +20,17 @@ def menu(key):
             add_vault_entry(link, website, username, ciphertext)
             print("Entry added successfully!")
         elif c==2:
-            pass
+            website = input("Enter website name: ")
+            pw = getpass("Enter new password")
+            ciphertext = encrypt(pw, key)
+            update_entry(link, website, ciphertext)
         elif c==3:
             website = input("Enter website name: ")
             web, uname, pw_cipher = get_vault_entries(link, website)
             d_cipher = decrypt(pw_cipher, key)
             print("Password : ", d_cipher)
         elif c==4:
+            print("Exiting program")
             exit()
         else:
             print("Invalid choice.\n Press either 1,2,3 or 4")
@@ -52,6 +56,13 @@ else:
             salt = derive_salt()
             derive_key(pw, salt)
             add_master_pw(link, hashed_pw, salt)
+            k = login(salt)
+            if k is not None:
+                menu(k)
+            else:
+                print("Too many attempts, login unsuccessful")
+                exit()
+            
 
 
     

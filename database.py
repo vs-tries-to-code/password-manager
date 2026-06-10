@@ -1,6 +1,5 @@
 import sqlite3 as sql
 
-
 def create_db():
     return sql.connect("storage.db")
 
@@ -64,4 +63,11 @@ def get_vault_entries(con, website):
     q = f"SELECT website, username, password FROM vault ORDER BY id WHERE website = {website};"
     cur.execute(q)
     return cur.fetchall()
+
+def update_entry(con, website, pw_cipher):
+    cur = con.cursor()
+    q = f"UPDATE vault SET password = {pw_cipher} WHERE website = {website};"
+    cur.execute(q)
+    con.commit()
+    print("Updation successful")
     
