@@ -11,6 +11,18 @@ def create_master_passwd():
             return pw1
 
         print("Passwords do not match. Try again.")
+        return None
+
+def set_new_mp():
+    while True:
+        pw1 = getpass("Enter new master password: ")
+        pw2 = getpass("Confirm password: ")
+
+        if pw1 == pw2:
+            return pw1
+
+        print("Passwords do not match. Try again.")
+        return None
 
 def hash_pw(passwd):
     pw_bytes = passwd.encode('utf-8')
@@ -42,7 +54,7 @@ def login(stored_hash):
 
     return None
 
-        
+    
 
 
 

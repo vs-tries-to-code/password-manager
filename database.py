@@ -50,6 +50,12 @@ def add_master_pw(con, hash_value, salt):
     con.commit()
     print("Master Password set successfully")
 
+def update_master_pw(con, password_hash, salt):
+    cur = con.cursor()
+    q = f"UPDATE master_auth SET password_hash = {password_hash} encryption_salt = {salt} WHERE id=1;"
+    cur.execute()
+    con.commit()
+    print("Master password updated")
 
 def add_vault_entry(con, website, username, password_ciphertext):
     cur = con.cursor()
