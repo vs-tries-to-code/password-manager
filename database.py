@@ -1,6 +1,7 @@
 import sqlite3 as sql
 
-def create_db():
+def create_db_connection():
+    q = """ CREATE DATABASE IF NOT EXISTS storage.db"""
     return sql.connect("storage.db")
 
 
@@ -31,7 +32,7 @@ def create_tables(con):
 
 def master_pw_exists(con):
     cur = con.cursor()
-    q = "SELECT 1 FROM master_auth LIMIT 1;"
+    q = "SELECT name FROM sqlite_master WHERE type='table' AND name='master_auth';"
     cur.execute(q)
     return cur.fetchone() is not None
 
