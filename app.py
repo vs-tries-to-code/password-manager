@@ -1,9 +1,9 @@
 from auth import create_master_passwd, hash_pw, verify_pw, login
 from crypto import derive_salt, derive_key, encrypt, decrypt
-from database import create_db, create_tables, master_pw_exists, add_master_pw, get_master_auth, add_vault_entry, get_vault_entries, update_entry
+from database import create_db_connection, create_tables, master_pw_exists, add_master_pw, get_master_auth, add_vault_entry, get_vault_entries, update_entry
 from getpass import getpass
 
-link = create_db()
+link = create_db_connection()
 
 def menu(key):
     while True:
@@ -31,8 +31,8 @@ def menu(key):
             d_cipher = decrypt(pw_cipher, key)
             print("Password : ", d_cipher)
         elif c==4:
-            stored_salt, master_pw = get_master_auth(link)
-            k = login(stored_salt)
+            hashed_pw, encryption_salt = get_master_auth(link)
+            k = login(hashed_pw, stored_salt)
             if k is not None:
                 new_mp = set_new_mp()
                 hashed_pw = hash_pw(new_mp)
@@ -49,9 +49,9 @@ def menu(key):
             print("Invalid choice.\n Press either 1,2,3 or 4")
 
 #user with master password
-if master_pw_exists():
-    stored_salt, master_pw = get_master_auth(link)
-    k = login(stored_salt)
+if master_pw_exists(link):
+    pw_hash, encryption_salt = get_master_auth(link)
+    k = login(pw_hash, encryption_salt)
     if k is not None:
         menu(k)
     else:
@@ -67,14 +67,12 @@ else:
         hashed_pw = hash_pw(pw)
         salt = derive_salt()
         add_master_pw(link, hashed_pw, salt)
-        k = login(salt)
+        k = login(hashed_pw, salt)
         if k is not None:
             menu(k)
         else:
             print("Too many attempts, login unsuccessful")
             exit()
-            
-
-
+                
     
 
