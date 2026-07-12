@@ -58,8 +58,8 @@ def add_master_pw(con, hash_value, salt):
 
 def update_master_pw(con, password_hash, salt):
     cur = con.cursor()
-    q = f"UPDATE master_auth SET password_hash = {password_hash} encryption_salt = {salt} WHERE id=1;"
-    cur.execute()
+    q = f"UPDATE master_auth SET password_hash = ? encryption_salt = ? WHERE id=1;"
+    cur.execute(q, (password_hash, salt))
     con.commit()
     print("Master password updated")
 
@@ -72,14 +72,14 @@ def add_vault_entry(con, website, username, password_ciphertext):
 
 def get_vault_entries(con, website):
     cur = con.cursor()
-    q = f"SELECT website, username, password FROM vault ORDER BY id WHERE website = {website};"
-    cur.execute(q)
+    q = f"SELECT website, username, password FROM vault ORDER BY id WHERE website = ?;"
+    cur.execute(q, (website,))
     return cur.fetchall()
 
 def update_entry(con, website, pw_cipher):
     cur = con.cursor()
-    q = f"UPDATE vault SET password = {pw_cipher} WHERE website = {website};"
-    cur.execute(q)
+    q = f"UPDATE vault SET password = ? WHERE website = ?;"
+    cur.execute(q, (password, website))
     con.commit()
     print("Updation successful")
     
