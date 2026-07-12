@@ -32,9 +32,14 @@ def create_tables(con):
 
 def master_pw_exists(con):
     cur = con.cursor()
-    q = "SELECT name FROM sqlite_master WHERE type='table' AND name='master_auth';"
-    cur.execute(q)
-    return cur.fetchone() is not None
+    q = "SELECT COUNT(*) FROM master_auth;"
+    try:
+        cur.execute(q)
+        count = cur.fetchone()[0]
+        return count > 0
+    except OperationalError:
+        return False
+    
 
 
 def get_master_auth(con):
