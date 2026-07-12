@@ -30,19 +30,18 @@ def hash_pw(passwd):
 
 def verify_pw(passwd, stored_hash):
     pw_bytes = passwd.encode('utf-8')
-    return bcrypt.checkpw(pw_bytes, stored_hash)
+    hashed = hash_pw(pw_bytes)
+    return bcrypt.checkpw(hashed, stored_hash)
 
 MAX_ATTEMPTS = 5
 
-def login(stored_hash):
+def login(stored_hash, stored_salt):
     attempts = 0
 
     while attempts < MAX_ATTEMPTS:
-        pw = input("Enter master password: ")
-
+        pw = getpass("Enter master password: ")
         if verify_pw(pw, stored_hash):
-            salt = derive_salt()
-            key = derive_key(pw, salt)
+            key = derive_key(pw, stored_salt)
             return key
 
         attempts += 1
