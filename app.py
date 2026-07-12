@@ -1,6 +1,6 @@
 from auth import create_master_passwd, hash_pw, verify_pw, login
 from crypto import derive_salt, derive_key, encrypt, decrypt
-from database import create_db_connection, create_tables, master_pw_exists, add_master_pw, get_master_auth, add_vault_entry, get_vault_entries, update_entry
+from database import create_db_connection, create_tables, master_pw_exists, add_master_pw, get_master_auth, add_vault_entry, get_vault_entries, update_entry,update_master_pw
 from getpass import getpass
 
 link = create_db_connection()
