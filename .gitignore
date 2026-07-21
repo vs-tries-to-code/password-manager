@@ -13,6 +13,7 @@
 # Python
 __pycache__/
 *.pyc
+*.py[cod]
 
 # Virtual environments
 .venv/
@@ -24,3 +25,8 @@ venv/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Build artifacts (generated when you build/install the package)
+*.egg-info/
+dist/
+build/
