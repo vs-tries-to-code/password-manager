@@ -1,12 +1,14 @@
 from auth import create_master_passwd, hash_pw, verify_pw, login
-from crypto import derive_salt, derive_key, encrypt, decrypt
-from database import create_db_connection, create_tables, master_pw_exists, add_master_pw, get_master_auth, add_vault_entry, get_vault_entries, update_entry,update_master_pw
+from crypto import derive_salt, derive_key, encrypt, decrypt, derive_vault_key
+from database import create_db_connection, create_tables, master_pw_exists, add_master_pw, get_master_auth, add_vault_entry, get_vault_entries, update_entry
 import os
 import sys
 import questionary
+import pyfiglet
 from rich.console import Console
-from rich.panel import Panel
 from rich.table import Table
+from rich.align import Align
+from rich.text import Text
 
 console = Console()
 
@@ -14,12 +16,11 @@ def clear_screen():
     os.system("cls" if os.name == "nt" else "clear")
 
 def display_header():
-    console.print(
-        Panel.fit(
-            "[bold cyan]SUB ROSA[/bold cyan]\n[dim]Forget the master password, and you are done for[/dim]",
-            padding=(0, 4),
-            )
-    )
+    ascii_art = pyfiglet.figlet_format("SUB ROSA")
+    
+    # Center and display
+    console.print(Align.center(Text(ascii_art, style="magenta1")))
+    console.print(Align.center(Text("Forget the master password, and you are done for\n", style="plum1")))
 
 def menu(link, key):
         while True:
@@ -27,12 +28,12 @@ def menu(link, key):
             display_header()
             
             choice = questionary.select(
-                "Select any one option"
+                "Select any one option",
                 choices = [
                     "1. Add Entry", 
-                    "2. Edit password",
-                    "3. Fetch password",
-                    "4. Update master password",
+                    "2. Edit Password",
+                    "3. Fetch Password",
+                    "4. Update Master Password",
                     "5. Exit"
                     ]
                 ).ask()
@@ -42,7 +43,7 @@ def menu(link, key):
                 sys.exit()
 
             elif "Add Entry" in choice:
-                console.print("\n[bold cyan]--- Add New Credentials ---[/bold cyan]")
+                console.print("\n[plum1]--- Add New Credentials ---[/plum1]")
                 website = questionary.text("Website / Service name:").ask()
                 username = questionary.text("Username / Email:").ask()
                 pw = questionary.password("Password:").ask()
@@ -59,7 +60,7 @@ def menu(link, key):
                 questionary.press_any_key_to_continue().ask()
             
             elif "Edit Password" in choice:
-                console.print("\n[bold cyan]--- Edit Password ---[/bold cyan]")
+                console.print("\n[plum1]--- Edit Password ---[/plum1]")
                 website = questionary.text("Enter website name to update:").ask()
 
                 if website:
@@ -74,7 +75,7 @@ def menu(link, key):
                 questionary.press_any_key_to_continue().ask()
 
             elif "Fetch Password" in choice:
-                console.print("\n[bold cyan]--- Fetch Credentials ---[/bold cyan]")
+                console.print("\n[plum1]--- Fetch Credentials ---[/plum1]")
                 website = questionary.text("Enter website name:").ask()
 
                 if website:
@@ -84,7 +85,7 @@ def menu(link, key):
                         web, uname, pw_cipher = entry
 
                         table = Table(title=f"Results for '{website}'", border_style="dim")
-                        table.add_column("Website", style="cyan")
+                        table.add_column("Website", style="plum1")
                         table.add_column("Username", style="yellow")
                         table.add_column("Decrypted Password", style="bold green")
 
@@ -101,35 +102,36 @@ def menu(link, key):
                 questionary.press_any_key_to_continue().ask()
 
             elif "Update Master Password" in choice:
-            console.print("\n[bold cyan]--- Update Master Password ---[/bold cyan]")
-            stored_hash, stored_salt = get_master_auth(link)
+                console.print("\n[plum1]--- Update Master Password ---[/plum1]")
+                stored_hash, stored_salt = get_master_auth(link)
 
-            #re-authenticate before allowing master password change
-            k = login(stored_hash, stored_salt)
-            if k is not None:
-                new_mp = set_new_mp()
-                if new_mp:
-                    hashed_pw = hash_pw(new_mp)
-                    new_salt = derive_salt()
-                    add_master_pw(link, hashed_pw, new_salt)
+                #re-authenticate before allowing master password change
+                k = login(stored_hash, stored_salt)
+                if k is not None:
+                    new_mp = set_new_mp()
+                    if new_mp:
+                        hashed_pw = hash_pw(new_mp)
+                        new_salt = derive_salt()
+                        add_master_pw(link, hashed_pw, new_salt)
+                        console.print(
+                            "\n[bold green]✓ Master Password updated!\nPlease restart the app.[/bold green]"
+                        )
+                        sys.exit()
+                else:
                     console.print(
-                        "\n[bold green]✓ Master Password updated!\nPlease restart the app.[/bold green]"
+                        "\n[bold red]✗ Verification failed.\nMaster password change aborted.[/bold red]"
                     )
-                    sys.exit()
-            else:
-                console.print(
-                    "\n[bold red]✗ Verification failed.\nMaster password change aborted.[/bold red]"
-                )
 
-            questionary.press_any_key_to_continue().ask()
+                questionary.press_any_key_to_continue().ask()
 
 def main():
     clear_screen()
     display_header()
     link = create_db_connection()
 
-    # Flow for returning user with a master password configured
+    # flow for returning user with a master password configured
     if master_pw_exists(link):
+        # extract the stored hash of mpw and the salt to generate encryption key
         stored_hash, stored_salt = get_master_auth(link)
         if not stored_hash or not stored_salt:
             console.print(
@@ -137,6 +139,7 @@ def main():
             )
             sys.exit(1)
 
+        #user log in 
         key = login(stored_hash, stored_salt)
         if key is not None:
             menu(link, key)
@@ -146,23 +149,20 @@ def main():
             )
             sys.exit(1)
 
-    # Flow for first-time user setup
+    # flow for first-time user setup
     else:
-        console.print(
-            Panel(
-                "[bold yellow]Welcome! Initializing new password vault...[/bold yellow]",
-                border_style="yellow",
-            )
-        )
+        console.print("[bold yellow]Welcome new user! Set up your vault[/bold yellow]")
         create_tables(link)
+        # creation of mpw
         pw = create_master_passwd()
 
         if pw is not None:
+            # (hash + salt) the mpw -> derive and salt for unique key -> store  
             hashed_pw = hash_pw(pw)
             salt = derive_salt()
             add_master_pw(link, hashed_pw, salt)
 
-            # Immediate login verification with the generated salt
+            # immediate login verification with the generated salt
             key = login(hashed_pw, salt)
             if key is not None:
                 menu(link, key)
