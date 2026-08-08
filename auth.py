@@ -1,54 +1,58 @@
 import bcrypt
 from getpass import getpass
 from crypto import derive_key, derive_salt
+import questionary
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+
+console = Console()
 
 def create_master_passwd():
-    while True:
-        pw1 = getpass("Enter master password: ")
-        pw2 = getpass("Confirm password: ")
+    console.print("\n[plum1]--- Create Master Password ---[/plum1]")
+    pw1 = questionary.password("Enter master password: ").ask()
+    pw2 = questionary.password("Confirm password: ").ask()
 
-        if pw1 == pw2:
-            return pw1
+    if pw1 == pw2:
+        return pw1
 
-        print("Passwords do not match. Try again.")
-        return None
+    console.print("\n[red]--- Passwords do not match, try again. ---[/red]")
+    return None
 
 def set_new_mp():
-    while True:
-        pw1 = getpass("Enter new master password: ")
-        pw2 = getpass("Confirm password: ")
+    console.print("\n[plum1]--- Change Master Password ---[/plum1]")
+    pw1 = questionary.password("Enter new master password: ").ask()
+    pw2 = questionary.password("Confirm password: ").ask()
 
-        if pw1 == pw2:
-            return pw1
+    if pw1 == pw2:
+        return pw1
 
-        print("Passwords do not match. Try again.")
-        return None
+    console.print("\n[red]--- Passwords do not match, try again. ---[/red]")
+    return None
 
-def hash_pw(passwd):
+def hash_pw(passwd: str) -> bytes:
     pw_bytes = passwd.encode('utf-8')
     return bcrypt.hashpw(pw_bytes, bcrypt.gensalt())
 
-def verify_pw(passwd, stored_hash):
-    pw_bytes = passwd.encode('utf-8')
-    hashed = hash_pw(pw_bytes)
-    return bcrypt.checkpw(hashed, stored_hash)
+def verify_pw(passwd: str, stored_hash: bytes) -> bool:
+    
+    return bcrypt.checkpw(passwd.encode('utf-8'), stored_hash)
 
 MAX_ATTEMPTS = 5
 
 def login(stored_hash, stored_salt):
     attempts = 0
-
     while attempts < MAX_ATTEMPTS:
-        pw = getpass("Enter master password: ")
+        pw = questionary.password("Enter master password: ").ask()
         if verify_pw(pw, stored_hash):
             key = derive_key(pw, stored_salt)
             return key
 
         attempts += 1
 
-        print(
-            f"Incorrect password. "
-            f"{MAX_ATTEMPTS - attempts} attempts remaining."
+        console.print(
+            "\n[red]Incorrect password.[/red]"
+            f"\n[red]{MAX_ATTEMPTS - attempts} attempts remaining.[/red]"
         )
 
     return None
