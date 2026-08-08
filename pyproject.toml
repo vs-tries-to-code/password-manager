@@ -1,5 +1,5 @@
 [project]
-name = "term-passmanager"
+name = "subrosa"
 version = "0.1.0"
 description = "A terminal-based secure password manager using SQLite and Fernet encryption."
 dependencies = [
@@ -9,7 +9,7 @@ dependencies = [
 
 [project.scripts]
 # This links the terminal command to your main function
-term-pass = "app:main"
+subrosa = "app:main"
 
 [build-system]
 requires = ["setuptools>=61.0.0"]
