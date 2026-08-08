@@ -37,7 +37,7 @@ def master_pw_exists(con):
         cur.execute(q)
         count = cur.fetchone()[0]
         return count > 0
-    except OperationalError:
+    except sql.OperationalError:
         return False
     
 
@@ -56,13 +56,6 @@ def add_master_pw(con, hash_value, salt):
     con.commit()
     print("Master Password set successfully")
 
-def update_master_pw(con, password_hash, salt):
-    cur = con.cursor()
-    q = f"UPDATE master_auth SET password_hash = ? encryption_salt = ? WHERE id=1;"
-    cur.execute(q, (password_hash, salt))
-    con.commit()
-    print("Master password updated")
-
 def add_vault_entry(con, website, username, password_ciphertext):
     cur = con.cursor()
     q = "INSERT INTO vault (website, username, password) VALUES (?, ?, ?);"
@@ -72,14 +65,14 @@ def add_vault_entry(con, website, username, password_ciphertext):
 
 def get_vault_entries(con, website):
     cur = con.cursor()
-    q = f"SELECT website, username, password FROM vault ORDER BY id WHERE website = ?;"
+    q = f"SELECT website, username, password FROM vault WHERE website = ? ORDER BY id;"
     cur.execute(q, (website,))
     return cur.fetchone()
 
 def update_entry(con, website, pw_cipher):
     cur = con.cursor()
     q = f"UPDATE vault SET password = ? WHERE website = ?;"
-    cur.execute(q, (password, website))
+    cur.execute(q, (pw_cipher, website))
     con.commit()
     print("Updation successful")
     
