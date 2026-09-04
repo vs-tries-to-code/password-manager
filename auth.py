@@ -1,9 +1,7 @@
 import bcrypt
-from getpass import getpass
 from crypto import derive_key, derive_salt
 import questionary
 from rich.console import Console
-from rich.panel import Panel
 from rich.table import Table
 
 console = Console()
@@ -40,13 +38,18 @@ def verify_pw(passwd: str, stored_hash: bytes) -> bool:
 
 MAX_ATTEMPTS = 5
 
-def login(stored_hash, stored_salt):
+def login(stored_hash, stored_salt, vault_key_encryp):
     attempts = 0
     while attempts < MAX_ATTEMPTS:
         pw = questionary.password("Enter master password: ").ask()
         if verify_pw(pw, stored_hash):
-            key = derive_key(pw, stored_salt)
-            return key
+            wrapping_key = derive_key(pw, stored_salt)
+            try:
+                vault_key = decrypt(vault_key_encryp, wrapping_key).encode('utf-8')
+                return vault_key
+            except Exception:
+                    console.print("\n[bold red]Vault integrity error — cannot unwrap key.[/bold red]")
+                    return None
 
         attempts += 1
 

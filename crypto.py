@@ -16,6 +16,9 @@ def derive_key(master_pw, salt):
     )
 
     return base64.urlsafe_b64encode(key)
+    
+def gen_vault_key():
+    return Fernet.generate_key()
 
 def encrypt(passwd, key):
     cipher = Fernet(key)

@@ -12,7 +12,8 @@ def create_tables(con):
     CREATE TABLE IF NOT EXISTS master_auth (
         id INTEGER PRIMARY KEY,
         password_hash BLOB NOT NULL,
-        encryption_salt BLOB NOT NULL
+        encryption_salt BLOB NOT NULL, 
+        vault_key_encryp BLOB NOT NULL
     );
     """
 
@@ -44,15 +45,15 @@ def master_pw_exists(con):
 
 def get_master_auth(con):
     cur = con.cursor()
-    q = "SELECT password_hash, encryption_salt FROM master_auth WHERE id = 1 LIMIT 1;"
+    q = "SELECT password_hash, encryption_salt, vault_key_encryp FROM master_auth WHERE id = 1 LIMIT 1;"
     cur.execute(q)
     return cur.fetchone()
 
 
-def add_master_pw(con, hash_value, salt):
+def add_master_pw(con, hash_value, salt, vault_key_encryp):
     cur = con.cursor()
-    q = "INSERT OR REPLACE INTO master_auth (id, password_hash, encryption_salt) VALUES (1, ?, ?);"
-    cur.execute(q, (hash_value, salt))
+    q = "INSERT OR REPLACE INTO master_auth (id, password_hash, encryption_salt, vault_key_encryp) VALUES (1, ?, ?, ?);"
+    cur.execute(q, (hash_value, salt, vault_key_encryp))
     con.commit()
     print("Master Password set successfully")
 

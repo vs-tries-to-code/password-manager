@@ -1,5 +1,5 @@
 from auth import create_master_passwd, hash_pw, verify_pw, login
-from crypto import derive_salt, derive_key, encrypt, decrypt, derive_vault_key
+from crypto import derive_salt, derive_key, encrypt, decrypt, gen_vault_key
 from database import create_db_connection, create_tables, master_pw_exists, add_master_pw, get_master_auth, add_vault_entry, get_vault_entries, update_entry
 import os
 import sys
@@ -103,15 +103,17 @@ def menu(link, key):
 
             elif "Update Master Password" in choice:
                 console.print("\n[plum1]--- Update Master Password ---[/plum1]")
-                stored_hash, stored_salt = get_master_auth(link)
+                stored_hash, stored_salt, vault_key_encryp = get_master_auth(link)
 
                 #re-authenticate before allowing master password change
-                k = login(stored_hash, stored_salt)
+                k = login(stored_hash, stored_salt, vault_key_encryp)
                 if k is not None:
                     new_mp = set_new_mp()
                     if new_mp:
                         hashed_pw = hash_pw(new_mp)
                         new_salt = derive_salt()
+                        wrapping_key = derive_key(new_mp, new_salt)
+                        new_vault_key_encryp = encrypt(k.decode('utf-8'), wrapping_key)
                         add_master_pw(link, hashed_pw, new_salt)
                         console.print(
                             "\n[bold green]✓ Master Password updated!\nPlease restart the app.[/bold green]"
@@ -132,17 +134,17 @@ def main():
     # flow for returning user with a master password configured
     if master_pw_exists(link):
         # extract the stored hash of mpw and the salt to generate encryption key
-        stored_hash, stored_salt = get_master_auth(link)
-        if not stored_hash or not stored_salt:
+        stored_hash, stored_salt, vault_key_encryp = get_master_auth(link)
+        if not stored_hash or not stored_salt or not vault_key_encryp:
             console.print(
                 "[bold red]Error loading master password from database.[/bold red]"
             )
             sys.exit(1)
 
         #user log in 
-        key = login(stored_hash, stored_salt)
-        if key is not None:
-            menu(link, key)
+        vault_key = login(stored_hash, stored_salt, vault_key_encryp)
+        if vault_key is not None:
+            menu(link, vault_key)
         else:
             console.print(
                 "\n[bold red]Too many failed attempts. Access denied.[/bold red]"
@@ -160,12 +162,17 @@ def main():
             # (hash + salt) the mpw -> derive and salt for unique key -> store  
             hashed_pw = hash_pw(pw)
             salt = derive_salt()
-            add_master_pw(link, hashed_pw, salt)
+            vault_key = gen_vault_key()
+
+            wrapping_key = derive_key(pw, salt)
+            vault_key_encryp = encrypt(vault_key.decode('utf-8'), wrapping_key)
+
+            add_master_pw(link, hashed_pw, salt, vault_key_encryp)
 
             # immediate login verification with the generated salt
-            key = login(hashed_pw, salt)
+            key = login(hashed_pw, salt, vault_key_encryp)
             if key is not None:
-                menu(link, key)
+                menu(link, vault_key)
             else:
                 console.print(
                     "\n[bold red]Login failed during setup.[/bold red]"
