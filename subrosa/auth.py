@@ -1,6 +1,6 @@
 import bcrypt
-from crypto import derive_key, derive_salt
 import questionary
+from .crypto import *
 from rich.console import Console
 from rich.table import Table
 

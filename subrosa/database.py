@@ -76,4 +76,10 @@ def update_entry(con, website, pw_cipher):
     cur.execute(q, (pw_cipher, website))
     con.commit()
     print("Updation successful")
+   
+def list_entries(con):
+    cur = con.cursor()
+    q = f"SELECT website, username FROM vault ORDER BY id;"
+    cur.execute(q)
+    return cur.fetchall()
     
