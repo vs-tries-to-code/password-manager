@@ -1,6 +1,6 @@
-from auth import create_master_passwd, hash_pw, verify_pw, login
-from crypto import derive_salt, derive_key, encrypt, decrypt, gen_vault_key
-from database import create_db_connection, create_tables, master_pw_exists, add_master_pw, get_master_auth, add_vault_entry, get_vault_entries, update_entry
+from .auth import *
+from .crypto import *
+from .database import *
 import os
 import sys
 import questionary
@@ -31,10 +31,11 @@ def menu(link, key):
                 "Select any one option",
                 choices = [
                     "1. Add Entry", 
-                    "2. Edit Password",
-                    "3. Fetch Password",
-                    "4. Update Master Password",
-                    "5. Exit"
+                    "2. List Entries",
+                    "3. Edit Password",
+                    "4. Fetch Password",
+                    "5. Update Master Password",
+                    "6. Exit"
                     ]
                 ).ask()
             
@@ -57,6 +58,17 @@ def menu(link, key):
                 else:
                     console.print("\n[bold red]✗ Input cancelled or empty.[/bold red]")
 
+                questionary.press_any_key_to_continue().ask()
+
+            elif "List Entries" in choice:
+                console.print("\n[plum1]--- List Entries ---[/plum1]")
+                table = Table(title=f"Added entries", border_style="dim")
+                table.add_column("Website", style="plum1")
+                table.add_column("Username", style="yellow")
+                entries = list_entries(link)
+                for entry in entries:
+                    table.add_row(entry[0], entry[1])
+                console.print(table)
                 questionary.press_any_key_to_continue().ask()
             
             elif "Edit Password" in choice:
