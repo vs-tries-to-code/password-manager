@@ -62,7 +62,7 @@ def menu(link, key):
 
             elif "List Entries" in choice:
                 console.print("\n[plum1]--- List Entries ---[/plum1]")
-                table = Table(title=f"Added entries", border_style="dim")
+                table = Table(title=f"All entries", border_style="dim")
                 table.add_column("Website", style="plum1")
                 table.add_column("Username", style="yellow")
                 entries = list_entries(link)
@@ -126,7 +126,7 @@ def menu(link, key):
                         new_salt = derive_salt()
                         wrapping_key = derive_key(new_mp, new_salt)
                         new_vault_key_encryp = encrypt(k.decode('utf-8'), wrapping_key)
-                        add_master_pw(link, hashed_pw, new_salt)
+                        add_master_pw(link, hashed_pw, new_salt, new_vault_key_encryp)
                         console.print(
                             "\n[bold green]✓ Master Password updated!\nPlease restart the app.[/bold green]"
                         )
