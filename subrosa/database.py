@@ -1,8 +1,15 @@
 import sqlite3 as sql
+import os
 
+def get_db_path():
+    #fixing the path of the database onto the package folder 
+    db_dir = os.path.expanduser("~/.subrosa")
+    os.makedirs(db_dir, exist_ok=True)
+    os.chmod(db_dir, 0o700)
+    return os.path.join(db_dir, "storage.db")
+    
 def create_db_connection():
-    q = """ CREATE DATABASE IF NOT EXISTS storage.db"""
-    return sql.connect("storage.db")
+    return sql.connect(get_db_path())
 
 
 def create_tables(con):
@@ -60,26 +67,26 @@ def add_master_pw(con, hash_value, salt, vault_key_encryp):
 def add_vault_entry(con, website, username, password_ciphertext):
     cur = con.cursor()
     q = "INSERT INTO vault (website, username, password) VALUES (?, ?, ?);"
-    cur.execute(q, (website, username, password_ciphertext))
+    cur.execute(q, (website.strip().lower(), username, password_ciphertext))
     con.commit()
 
 
 def get_vault_entries(con, website):
     cur = con.cursor()
-    q = f"SELECT website, username, password FROM vault WHERE website = ? ORDER BY id;"
-    cur.execute(q, (website,))
+    q = "SELECT website, username, password FROM vault WHERE website = ?;"
+    cur.execute(q, (website.strip().lower(),))
     return cur.fetchone()
 
 def update_entry(con, website, pw_cipher):
     cur = con.cursor()
-    q = f"UPDATE vault SET password = ? WHERE website = ?;"
-    cur.execute(q, (pw_cipher, website))
+    q = "UPDATE vault SET password = ? WHERE website = ?;"
+    cur.execute(q, (pw_cipher, website.strip().lower()))
     con.commit()
     print("Updation successful")
    
 def list_entries(con):
     cur = con.cursor()
-    q = f"SELECT website, username FROM vault ORDER BY id;"
+    q = "SELECT website, username FROM vault ORDER BY id;"
     cur.execute(q)
     return cur.fetchall()
     
