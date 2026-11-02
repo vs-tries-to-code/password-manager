@@ -40,7 +40,7 @@ def menu(link, key):
                 ).ask()
             
             if choice is None or "Exit" in choice:
-                console.print("\n[pale_turquoise1]Exiting vault. Forget the master password and you are done for[/pale_turquoise1]")
+                console.print("\n[green_yellow]Exiting vault. Forget the master password and you are done for[/green_yellow]")
                 sys.exit()
 
             elif "Add Entry" in choice:
@@ -64,7 +64,7 @@ def menu(link, key):
                 console.print("\n[plum1]--- List Entries ---[/plum1]")
                 table = Table(title=f"All entries", border_style="dim")
                 table.add_column("Website", style="plum1")
-                table.add_column("Username", style="pale_turquoise1")
+                table.add_column("Username", style="green_yellow")
                 entries = list_entries(link)
                 for entry in entries:
                     table.add_row(entry[0], entry[1])
@@ -76,13 +76,16 @@ def menu(link, key):
                 website = questionary.text("Enter website name to update:").ask()
 
                 if website:
-                    pw = questionary.password("Enter new password:").ask()
-                    if pw:
-                        ciphertext = encrypt(pw, key)
-                        update_entry(link, website, ciphertext)
-                        console.print(
-                            f"\n[bold green]✓ Password for '{website}' updated successfully![/bold green]"
-                        )
+                    if get_vault_entries(link, website) is None:
+                       console.print(f"\n[bold red]✗ No entry found for '{website}'.[/bold red]") 
+                    else:
+                        pw = questionary.password("Enter new password:").ask()
+                        if pw:
+                            ciphertext = encrypt(pw, key)
+                            update_entry(link, website, ciphertext)
+                            console.print(
+                                f"\n[bold green]✓ Password for '{website}' updated successfully![/bold green]"
+                            )
 
                 questionary.press_any_key_to_continue().ask()
 
@@ -98,7 +101,7 @@ def menu(link, key):
 
                         table = Table(title=f"Results for '{website}'", border_style="dim")
                         table.add_column("Website", style="plum1")
-                        table.add_column("Username", style="pale_turquoise1")
+                        table.add_column("Username", style="green_yellow")
                         table.add_column("Decrypted Password", style="bold green")
 
                         try:
@@ -169,7 +172,7 @@ def main():
 
     # flow for first-time user setup
     else:
-        console.print("[bold pale_turquoise1]Welcome new user! Set up your vault[/bold pale_turquoise1]")
+        console.print("[green_yellow]Welcome new user! Set up your vault[/green_yellow]")
         create_tables(link)
         # creation of mpw
         pw = create_master_passwd()
