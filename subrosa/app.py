@@ -40,7 +40,7 @@ def menu(link, key):
                 ).ask()
             
             if choice is None or "Exit" in choice:
-                console.print("\n[yellow]Exiting vault. Forget the master password and you are done for[/yellow]")
+                console.print("\n[pale_turquoise1]Exiting vault. Forget the master password and you are done for[/pale_turquoise1]")
                 sys.exit()
 
             elif "Add Entry" in choice:
@@ -64,7 +64,7 @@ def menu(link, key):
                 console.print("\n[plum1]--- List Entries ---[/plum1]")
                 table = Table(title=f"All entries", border_style="dim")
                 table.add_column("Website", style="plum1")
-                table.add_column("Username", style="yellow")
+                table.add_column("Username", style="pale_turquoise1")
                 entries = list_entries(link)
                 for entry in entries:
                     table.add_row(entry[0], entry[1])
@@ -98,7 +98,7 @@ def menu(link, key):
 
                         table = Table(title=f"Results for '{website}'", border_style="dim")
                         table.add_column("Website", style="plum1")
-                        table.add_column("Username", style="yellow")
+                        table.add_column("Username", style="pale_turquoise1")
                         table.add_column("Decrypted Password", style="bold green")
 
                         try:
@@ -118,9 +118,11 @@ def menu(link, key):
                 stored_hash, stored_salt, vault_key_encryp = get_master_auth(link)
 
                 #re-authenticate before allowing master password change
+                
+                console.print("\n[plum1]Enter current password[/plum1]")
                 k = login(stored_hash, stored_salt, vault_key_encryp)
                 if k is not None:
-                    new_mp = set_new_mp()
+                    new_mp = create_master_passwd()
                     if new_mp:
                         hashed_pw = hash_pw(new_mp)
                         new_salt = derive_salt()
@@ -130,7 +132,9 @@ def menu(link, key):
                         console.print(
                             "\n[bold green]✓ Master Password updated!\nPlease restart the app.[/bold green]"
                         )
-                        sys.exit()
+                        sys.exit(0)
+                    else:
+                        console.print("\n[bold red]✗Password is empty, or they don't match[/bold red]")
                 else:
                     console.print(
                         "\n[bold red]✗ Verification failed.\nMaster password change aborted.[/bold red]"
@@ -159,13 +163,13 @@ def main():
             menu(link, vault_key)
         else:
             console.print(
-                "\n[bold red]Too many failed attempts. Access denied.[/bold red]"
+                "\n[bold red]Login cancelled or too many failed attempts. Access denied.[/bold red]"
             )
             sys.exit(1)
 
     # flow for first-time user setup
     else:
-        console.print("[bold yellow]Welcome new user! Set up your vault[/bold yellow]")
+        console.print("[bold pale_turquoise1]Welcome new user! Set up your vault[/bold pale_turquoise1]")
         create_tables(link)
         # creation of mpw
         pw = create_master_passwd()
@@ -181,21 +185,16 @@ def main():
 
             add_master_pw(link, hashed_pw, salt, vault_key_encryp)
 
-            # immediate login verification with the generated salt
-            key = login(hashed_pw, salt, vault_key_encryp)
-            if key is not None:
-                menu(link, vault_key)
-            else:
-                console.print(
-                    "\n[bold red]Login failed during setup.[/bold red]"
-                )
-                sys.exit(1)
-        else:
-            console.print(
-                "\n[bold red]Setup cancelled. Passwords did not match.[/bold red]"
-            )
-            sys.exit(1)
+            menu(link, vault_key)
 
+        else:
+            console.print("\n[bold red]Passwords don't match or it's empty[/bold red]")
+def run():
+    try:
+        main()
+    except KeyboardInterrupt:
+        console.print("\n[red]How dare you interrupt me[/red]\n")
+        sys.exit(0)
 
 if __name__ == "__main__":
-    main()
+    run()

@@ -12,8 +12,8 @@ dependencies = [
 ]
 
 [project.scripts]
-# This links the terminal command to your main function
-subrosa = "subrosa.app:main"
+# This links the terminal command to run function
+subrosa = "subrosa.app:run"
 
 [build-system]
 requires = ["setuptools>=61.0.0"]
