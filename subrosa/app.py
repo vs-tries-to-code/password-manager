@@ -35,7 +35,8 @@ def menu(link, key):
                     "3. Edit Password",
                     "4. Fetch Password",
                     "5. Update Master Password",
-                    "6. Exit"
+                    "6. Delete Entry",
+                    "7. Exit"
                     ]
                 ).ask()
             
@@ -145,6 +146,24 @@ def menu(link, key):
 
                 questionary.press_any_key_to_continue().ask()
 
+            elif "Delete Entry" in choice:
+                console.print("\n[plum1]--- Delete Entry ---[/plum1]")
+                website = questionary.text("Enter website name to delete:").ask()
+
+                if website:
+                    if get_vault_entries(link, website) is None:
+                        console.print(f"\n[bold red]✗ No entry found for '{website}'.[/bold red]")
+                    else:
+                        sure = questionary.confirm(f"Permanently delete '{website}'? This cannot be undone.",
+                                        default=False,
+                                    ).ask()
+
+                        if sure:
+                            delete_entry(link, website)
+                            console.print(f"\n[bold green]✓ '{website}' deleted.[/bold green]")
+                        else:
+                            console.print("\n[green_yellow]Cancelled. Nothing was deleted.[/green_yellow]")
+                questionary.press_any_key_to_continue.ask()
 def main():
     clear_screen()
     display_header()

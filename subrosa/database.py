@@ -70,12 +70,11 @@ def add_vault_entry(con, website, username, password_ciphertext):
     cur.execute(q, (website.strip().lower(), username, password_ciphertext))
     con.commit()
 
-
 def get_vault_entries(con, website):
     cur = con.cursor()
     q = "SELECT website, username, password FROM vault WHERE website = ?;"
     cur.execute(q, (website.strip().lower(),))
-    return cur.fetchone()
+    return cur.fetchall()
 
 def update_entry(con, website, pw_cipher):
     cur = con.cursor()
@@ -89,4 +88,11 @@ def list_entries(con):
     q = "SELECT website, username FROM vault ORDER BY id;"
     cur.execute(q)
     return cur.fetchall()
-    
+ 
+def delete_entry(con, website):
+    cur = con.cursor()
+    q = "DELETE FROM vault WHERE website = ?;"
+    cur.execute(q, (website.strip().lower(),))
+    con.commit()
+
+    return cur.rowcount
