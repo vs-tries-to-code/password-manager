@@ -74,7 +74,7 @@ def get_vault_entries(con, website):
     cur = con.cursor()
     q = "SELECT website, username, password FROM vault WHERE website = ?;"
     cur.execute(q, (website.strip().lower(),))
-    return cur.fetchall()
+    return cur.fetchone()
 
 def update_entry(con, website, pw_cipher):
     cur = con.cursor()
