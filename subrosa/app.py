@@ -47,23 +47,32 @@ def menu(link, key):
             elif "Add Entry" in choice:
                 console.print("\n[plum1]--- Add New Credentials ---[/plum1]")
                 website = questionary.text("Website / Service name:").ask()
-                username = questionary.text("Username / Email:").ask()
-                pw = questionary.password("Password:").ask()
-
-                if website and username and pw:
-                    ciphertext = encrypt(pw, key)
-                    add_vault_entry(link, website, username, ciphertext)
-                    console.print(
-                        f"\n[bold green]✓ Entry for '{website}' saved successfully![/bold green]"
-                    )
-                else:
+            
+                if not website or not website.strip():
                     console.print("\n[bold red]✗ Input cancelled or empty.[/bold red]")
-
-                questionary.press_any_key_to_continue().ask()
+                #duplicate check
+                elif get_vault_entries(link, website):
+                    console.print(
+                        f"\n[red]An entry for '{website}' already exists. "
+                        "Use Edit Password to change it.[/red]"
+                    )
+            
+                else:
+                    username = questionary.text("Username / Email:").ask()
+                    pw = questionary.password("Password:").ask()
+            
+                    if username and pw:
+                        ciphertext = encrypt(pw, key)
+                        add_vault_entry(link, website, username, ciphertext)
+                        console.print(f"\n[bold green]✓ Entry for '{website}' saved![/bold green]")
+                    else:
+                        console.print("\n[bold red]✗ Input cancelled or empty.[/bold red]")
+            
+                questionary.press_any_key_to_continue().ask()            
 
             elif "List Entries" in choice:
                 console.print("\n[plum1]--- List Entries ---[/plum1]")
-                table = Table(title=f"All entries", border_style="dim")
+                table = Table(title="All entries", border_style="dim")
                 table.add_column("Website", style="plum1")
                 table.add_column("Username", style="green_yellow")
                 entries = list_entries(link)
@@ -163,7 +172,7 @@ def menu(link, key):
                             console.print(f"\n[bold green]✓ '{website}' deleted.[/bold green]")
                         else:
                             console.print("\n[green_yellow]Cancelled. Nothing was deleted.[/green_yellow]")
-                questionary.press_any_key_to_continue.ask()
+                questionary.press_any_key_to_continue().ask()
 def main():
     clear_screen()
     display_header()
